@@ -6,10 +6,11 @@ function App() {
    return (
       <div className="App">
          <header className="header">
-            <div>
-               <p>Go File</p>
+            <div className="title-container">
+               <p className="title">Go File</p>
             </div>
             <div className="verticalLine" />
+            <div className="header-image" />
          </header>
          <MyDropzone />
       </div>

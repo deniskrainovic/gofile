@@ -7,7 +7,7 @@ const MyDropzone = () => {
    const [fileSelected, setFileSelected] = useState(false);
 
    const uploadHandler = () => {
-      console.log(file);
+      if (fileSelected) console.log(file);
    };
 
    return (
@@ -22,15 +22,18 @@ const MyDropzone = () => {
             {({ getRootProps, getInputProps }) => (
                <div {...getRootProps()} className="dropzone">
                   <input {...getInputProps()} />
-                  <div>
-                     Drag 'n' drop some files here, or click to select files
-                  </div>
+                  <div>Drag and drop files or upload</div>
                </div>
             )}
          </Dropzone>
          {fileSelected ? <p>File: {`${file[0].name}`}</p> : null}
-         <button type="button" onClick={uploadHandler}>
-            Upload
+         <button
+            className="upload-button"
+            type="button"
+            disabled={!fileSelected}
+            onClick={uploadHandler}
+         >
+            Generate Link
          </button>
       </React.Fragment>
    );

@@ -8,11 +8,34 @@
 .header {
    display: flex;
    flex-direction: row;
-   justify-content: center;
+   justify-content: left;
+   align-items: center;
+   height: 150px;
+   border-bottom: 1px solid darkgray;
 }
-
+.title-container {
+   padding-left: 50px;
+   padding-right: 50px;
+   display: flex;
+   align-items: center;
+}
+.title {
+   color: #45b29d;
+   font-size: 50px;
+   font-weight: bold;
+}
 .verticalLine {
-   height: 100px;
-   background-color: blue;
-   width: 5px;
+   height: 80%;
+   background-color: #ffb366;
+   width: 3px;
+}
+.header-image {
+   display: flex;
+   align-items: center;
+   padding-left: 50px;
+   background-image: url("https://cdn2.iconfinder.com/data/icons/mixed-rounded-flat-icon/512/rocket-128.png");
+   background-position: center;
+   background-repeat: no-repeat;
+   height: 128px;
+   width: 128px;
 }
