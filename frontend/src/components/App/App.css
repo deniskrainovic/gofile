@@ -1,0 +1,18 @@
+.App {
+   display: flex;
+   justify-content: center;
+   flex-direction: column;
+   width: 100%;
+}
+
+.header {
+   display: flex;
+   flex-direction: row;
+   justify-content: center;
+}
+
+.verticalLine {
+   height: 100px;
+   background-color: blue;
+   width: 5px;
+}
