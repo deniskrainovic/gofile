@@ -41,3 +41,10 @@ func (l *Link) CheckLink(conn *pgxpool.Pool) (bool, bool) {
 	}
 	return exists, passwordSet
 }
+
+func (l *Link) CheckPassword(conn *pgxpool.Pool) (bool, bool) {
+	var isPasswordCorrect bool = false
+	var definde
+	err := conn.QueryRow(context.Background(), "SELECT password FROM links WHERE id=$1", l.ID.String()).Scan(&l.Accesspassword)
+	if 
+}

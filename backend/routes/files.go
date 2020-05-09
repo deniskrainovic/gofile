@@ -72,6 +72,6 @@ func UploadFile(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
-func GetFiles(c *gin.Context) {
+func GetFilesList(c *gin.Context) {
 
 }
