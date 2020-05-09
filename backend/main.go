@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	"backend/middleware"
 	"backend/routes"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 func main() {
@@ -18,20 +19,30 @@ func main() {
 		return
 	}
 	router := gin.Default()
+	router.LoadHTMLGlob("templates/*.html")
 	router.Use(middleware.CookieMiddleware())
-	uploadsGroup := router.Group("uploads")
+	router.Use(middleware.DbMiddleware(*conn))
+	router.Use(middleware.CORSMiddleware())
+
+	router.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.html", nil)
+	})
+	router.Group("/uploads")
 	{
-		uploadsGroup.POST("file", middleware.DbMiddleware(*conn), routes.UploadsPostFile)
+		router.GET(":uploadID", routes.GetLink, routes.GetLinkFiles)
 	}
+
+	router.POST("upload/file", routes.UploadFile)
+	router.POST("link/generate", routes.GenerateLink)
+
 	router.Run(":8080")
 }
 
-func connectDB() (c *pgx.Conn, err error) {
-	conn, err := pgx.Connect(context.Background(), "postgresql://postgres:Test123@localhost:5432/gofile")
+func connectDB() (c *pgxpool.Pool, err error) {
+	conn, err := pgxpool.Connect(context.Background(), "postgresql://postgres:@localhost:5432/gofile")
 	if err != nil {
 		fmt.Println("Error connecting to DB")
 		fmt.Println(err.Error())
 	}
-	err = conn.Ping(context.Background())
 	return conn, err
 }

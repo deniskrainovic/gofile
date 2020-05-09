@@ -10,10 +10,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
-func UploadsPostFile(c *gin.Context) {
+func UploadFile(c *gin.Context) {
 	file, err := c.FormFile("file")
 	if err != nil {
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -56,19 +56,22 @@ func UploadsPostFile(c *gin.Context) {
 	}
 
 	db, _ := c.Get("db")
-	conn := db.(pgx.Conn)
+	conn := db.(pgxpool.Pool)
 	fileInfo := models.File{
 		Storedname:   storedname,
 		Originalname: originalname,
 		Extension:    extension,
 		Cookie:       cookie,
 	}
-	err = fileInfo.Upload(&conn)
+	err = fileInfo.WriteToDB(&conn)
 	if err != nil {
 		fmt.Println(err.Error())
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-
 	c.Status(http.StatusOK)
+}
+
+func GetFiles(c *gin.Context) {
+
 }

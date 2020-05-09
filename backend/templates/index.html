@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Single file upload</title>
+</head>
+<body>
+<h1>Upload single file</h1>
+
+<form action="http://localhost:8080/upload/file" method="post" enctype="multipart/form-data">
+    Files: <input type="file" name="file"><br><br>
+    <input type="submit" value="Submit">
+</form>
+<br><hr><br>
+<form id="generateLink">
+    Password: <input type="password" id="password"><br>
+    Duration: <select id="generateLink" id="duration" required>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+      </select><br><br>
+    <input type="submit" value="Submit" onclick="submitForm()">
+</form>
+</body>
+<script type="text/javascript">
+    function submitForm(){
+        let password = document.getElementById("password").value
+
+        let obj = {password: password, expirationDays: 2}
+        const Http = new XMLHttpRequest();
+        const url='http://localhost:8080/link/generate';
+        Http.open("POST", url);
+        Http.setRequestHeader("Content-Type", "application/json");
+        Http.send(JSON.stringify(obj));
+
+        Http.onreadystatechange = (e) => {
+            alert(Http.status)
+            alert(Http.responseText)
+        }
+    }
+</script>
+</html>
