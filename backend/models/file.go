@@ -9,17 +9,27 @@ import (
 )
 
 type File struct {
-	Storedname   string
+	Storedname   string `json:"-"`
 	Originalname string
-	Extension    string
-	Cookie       string
-	ID           uuid.UUID
-	CreatedAt    time.Time
+	Cookie       string    `json:"-"`
+	ID           uuid.UUID `json:"-"`
+	CreatedAt    time.Time `json:"-"`
 }
 
 //WriteToDB writes the file-info to the database
 func (f *File) WriteToDB(conn *pgxpool.Pool) error {
-	_, err := conn.Exec(context.Background(), "INSERT INTO files (storedname, originalname, extension, cookie) VALUES ($1, $2, $3, $4)", f.Storedname, f.Originalname, f.Extension, f.Cookie)
+	_, err := conn.Exec(context.Background(), "INSERT INTO files (storedname, originalname, cookie) VALUES ($1, $2, $3)", f.Storedname, f.Originalname, f.Cookie)
 
 	return err
+}
+
+func GetAllFilesListByCookie(conn *pgxpool.Pool, cookie string) ([]File, error) {
+	rows, err := conn.Query(context.Background(), "SELECT id,originalname FROM files WHERE Cookie = $1", cookie)
+	var files []File
+	for rows.Next() {
+		var file File
+		err = rows.Scan(&file.ID, &file.Originalname)
+		files = append(files, file)
+	}
+	return files, err
 }

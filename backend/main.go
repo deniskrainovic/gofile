@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	"backend/middleware"
 	"backend/routes"
@@ -19,19 +18,12 @@ func main() {
 		return
 	}
 	router := gin.Default()
-	router.LoadHTMLGlob("templates/*.html")
 	router.Use(middleware.CookieMiddleware())
 	router.Use(middleware.DbMiddleware(*conn))
 	router.Use(middleware.CORSMiddleware())
 
-	router.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.html", nil)
-	})
-	router.Group("/uploads")
-	{
-		router.GET(":uploadID", routes.GetLink, routes.GetLinkFiles)
-	}
-
+	router.GET("test/2", routes.ServeTest)
+	router.POST("uploads/:uploadID", routes.PostLink)
 	router.POST("upload/file", routes.UploadFile)
 	router.POST("link/generate", routes.GenerateLink)
 

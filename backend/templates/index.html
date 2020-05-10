@@ -24,6 +24,11 @@
         <option value="7">7</option>
       </select><br><br>
     <input type="submit" value="Submit" onclick="submitForm()">
+    <br><br><br><hr>
+    <form method="POST">
+        <input type="text" value="ID" id="cookieID">
+        <input type="submit" value="Submit" onclick="submitFormID()">
+    </form>
 </form>
 </body>
 <script type="text/javascript">
@@ -41,6 +46,10 @@
             alert(Http.status)
             alert(Http.responseText)
         }
+    }
+
+    function submitFormID() {
+
     }
 </script>
 </html>

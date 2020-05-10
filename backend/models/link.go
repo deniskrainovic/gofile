@@ -24,7 +24,7 @@ type Link struct {
 func (l *Link) WriteToDB(conn *pgxpool.Pool) error {
 	l.ExpirationDate = time.Now().Local().Add(time.Hour * time.Duration(*l.ExpirationDays*24))
 
-	_, err := conn.Exec(context.Background(), "WITH lid AS (INSERT INTO links (folderpath, accesspassword, expirationdate, cookie) VALUES ($1, $2, $3, $4) RETURNING id,cookie) UPDATE files SET link = (SELECT id FROM lid) WHERE cookie = (SELECT cookie FROM lid)", l.Folderpath, l.Accesspassword, l.ExpirationDate, l.Cookie)
+	_, err := conn.Exec(context.Background(), "WITH lid AS (INSERT INTO links (folderpath, accesspassword, expirationdate, cookie) VALUES ($1, $2, $3, $4) RETURNING id,cookie) UPDATE files SET linkid = (SELECT id FROM lid) WHERE cookie = (SELECT cookie FROM lid)", l.Folderpath, l.Accesspassword, l.ExpirationDate, l.Cookie)
 
 	return err
 }
@@ -32,7 +32,7 @@ func (l *Link) WriteToDB(conn *pgxpool.Pool) error {
 func (l *Link) CheckLink(conn *pgxpool.Pool) (bool, bool) {
 	var exists bool = false
 	var passwordSet bool = false
-	err := conn.QueryRow(context.Background(), "SELECT password FROM links WHERE id=$1", l.ID.String()).Scan(&l.Accesspassword)
+	err := conn.QueryRow(context.Background(), "SELECT accesspassword, id FROM links WHERE cookie=$1", l.Cookie.String()).Scan(&l.Accesspassword)
 	if err != pgx.ErrNoRows {
 		exists = true
 	}
@@ -42,9 +42,13 @@ func (l *Link) CheckLink(conn *pgxpool.Pool) (bool, bool) {
 	return exists, passwordSet
 }
 
-func (l *Link) CheckPassword(conn *pgxpool.Pool) (bool, bool) {
-	var isPasswordCorrect bool = false
-	var definde
-	err := conn.QueryRow(context.Background(), "SELECT password FROM links WHERE id=$1", l.ID.String()).Scan(&l.Accesspassword)
-	if 
+//CheckPassword compares passwords and returns if its correct or not
+func (l *Link) CheckPassword(conn *pgxpool.Pool) (bool, error) {
+	isPasswordCorrect := false
+	var dbPassword string
+	err := conn.QueryRow(context.Background(), "SELECT accesspassword FROM links WHERE cookie=$1", l.Cookie.String()).Scan(&dbPassword)
+	if dbPassword == l.Accesspassword {
+		isPasswordCorrect = true
+	}
+	return isPasswordCorrect, err
 }

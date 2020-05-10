@@ -15,7 +15,6 @@ CREATE TABLE links (
 CREATE TABLE files (
     created_at TIMESTAMP DEFAULT NOW(),
     id uuid PRIMARY KEY DEFAULT uuid_generate_v1(),
-    extension VARCHAR(30) NOT NULL,
     originalname VARCHAR(300) NOT NULL,
     storedname VARCHAR(300) NOT NULL,
     cookie uuid NOT NULL,
