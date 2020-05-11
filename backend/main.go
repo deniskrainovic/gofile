@@ -22,7 +22,7 @@ func main() {
 	router.Use(middleware.DbMiddleware(*conn))
 	router.Use(middleware.CORSMiddleware())
 
-	router.GET("test/2", routes.ServeTest)
+	router.POST("uploads/:uploadID/download", routes.DownloadAllFiles)
 	router.POST("uploads/:uploadID", routes.PostLink)
 	router.POST("upload/file", routes.UploadFile)
 	router.POST("link/generate", routes.GenerateLink)

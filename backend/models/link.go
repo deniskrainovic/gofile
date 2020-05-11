@@ -32,11 +32,12 @@ func (l *Link) WriteToDB(conn *pgxpool.Pool) error {
 func (l *Link) CheckLink(conn *pgxpool.Pool) (bool, bool) {
 	var exists bool = false
 	var passwordSet bool = false
-	err := conn.QueryRow(context.Background(), "SELECT accesspassword, id FROM links WHERE cookie=$1", l.Cookie.String()).Scan(&l.Accesspassword)
+	var password string
+	err := conn.QueryRow(context.Background(), "SELECT accesspassword FROM links WHERE cookie=$1", l.Cookie.String()).Scan(&password)
 	if err != pgx.ErrNoRows {
 		exists = true
 	}
-	if l.Accesspassword != "" {
+	if password != "" {
 		passwordSet = true
 	}
 	return exists, passwordSet

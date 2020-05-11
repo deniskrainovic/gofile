@@ -1,9 +1,14 @@
 package models
 
 import (
+	"archive/zip"
 	"context"
+	"io"
+	"os"
+	"path/filepath"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
@@ -32,4 +37,26 @@ func GetAllFilesListByCookie(conn *pgxpool.Pool, cookie string) ([]File, error) 
 		files = append(files, file)
 	}
 	return files, err
+}
+
+func DownloadAllFilesByCookie(conn *pgxpool.Pool, cookie string, writer *gin.ResponseWriter) error {
+	rows, err := conn.Query(context.Background(), "SELECT storedname,originalname FROM files WHERE Cookie = $1", cookie)
+
+	wd, _ := os.Getwd()
+	ar := zip.NewWriter(*writer)
+
+	for rows.Next() {
+		path := filepath.Join(wd, "uploads", cookie)
+		var storedname string
+		var originalname string
+
+		err = rows.Scan(&storedname, &originalname)
+		path = filepath.Join(path, storedname)
+		file, _ := os.Open(path)
+		f, _ := ar.Create(originalname)
+		io.Copy(f, file)
+	}
+
+	ar.Close()
+	return err
 }

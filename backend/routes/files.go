@@ -1,10 +1,8 @@
 package routes
 
 import (
-	"archive/zip"
 	"backend/models"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -75,7 +73,7 @@ func UploadFile(c *gin.Context) {
 func DownloadAllFiles(c *gin.Context) {
 	uploadID := c.Param("uploadID")
 	link := models.Link{}
-	err := c.ShouldBindJSON(&link)
+	err := c.ShouldBind(&link)
 	id, err := uuid.Parse(uploadID)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -91,7 +89,10 @@ func DownloadAllFiles(c *gin.Context) {
 		return
 	}
 	if passwordSet == false {
-		//serve files
+		c.Writer.Header().Set("Content-type", "application/octet-stream")
+		c.Writer.Header().Set("Content-Disposition", "attachment; filename=gofile_download.zip")
+		models.DownloadAllFilesByCookie(&conn, link.Cookie.String(), &c.Writer)
+		return
 	} else {
 		if link.Accesspassword == "" {
 			c.AbortWithStatus(http.StatusUnauthorized)
@@ -99,37 +100,18 @@ func DownloadAllFiles(c *gin.Context) {
 		}
 		isPasswordCorrect, err := link.CheckPassword(&conn)
 		if err != nil {
-			fmt.Println("Here")
 			fmt.Println(err.Error())
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
 		if isPasswordCorrect == true {
-			//serve files
+			c.Writer.Header().Set("Content-type", "application/octet-stream")
+			c.Writer.Header().Set("Content-Disposition", "attachment; filename=gofile_download.zip")
+			models.DownloadAllFilesByCookie(&conn, link.Cookie.String(), &c.Writer)
+			return
 		} else {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 	}
-}
-
-func ServeTest(c *gin.Context) {
-	wd, _ := os.Getwd()
-	path := filepath.Join(wd, "uploads")
-	path = filepath.Join(path, "1.txt")
-
-	c.Writer.Header().Set("Content-type", "application/octet-stream")
-	c.Writer.Header().Set("Content-Disposition", "attachment; filename=filename.zip")
-	ar := zip.NewWriter(c.Writer)
-	path = filepath.Join(path, "1.txt")
-	file1, _ := os.Open("filename1")
-	path = filepath.Join(path, "2.txt")
-	file2, _ := os.Open("filename2")
-	path = filepath.Join(path, "1.txt")
-	f1, _ := ar.Create("filename1")
-	io.Copy(f1, file1)
-	path = filepath.Join(path, "2.txt")
-	f2, _ := ar.Create("filename2")
-	io.Copy(f2, file2)
-	ar.Close()
 }

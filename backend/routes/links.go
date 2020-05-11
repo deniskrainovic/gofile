@@ -14,7 +14,7 @@ import (
 
 func GenerateLink(c *gin.Context) {
 	link := models.Link{}
-	err := c.ShouldBindJSON(&link)
+	err := c.ShouldBind(&link)
 	if err != nil {
 		fmt.Println(err.Error())
 		c.AbortWithStatus(http.StatusBadRequest)
@@ -45,6 +45,9 @@ func GenerateLink(c *gin.Context) {
 		return
 	}
 
+	cookie := uuid.New().String()
+	c.SetCookie("session", cookie, 86400, "/", "localhost", false, true)
+
 	url := "http://localhost:8080/uploads/" + link.Cookie.String()
 	c.JSON(http.StatusOK, gin.H{"link": url})
 }
@@ -52,7 +55,7 @@ func GenerateLink(c *gin.Context) {
 func PostLink(c *gin.Context) {
 	uploadID := c.Param("uploadID")
 	link := models.Link{}
-	err := c.ShouldBindJSON(&link)
+	err := c.ShouldBind(&link)
 	var files []models.File
 	id, err := uuid.Parse(uploadID)
 	if err != nil {
@@ -82,7 +85,6 @@ func PostLink(c *gin.Context) {
 		}
 		isPasswordCorrect, err := link.CheckPassword(&conn)
 		if err != nil {
-			fmt.Println("Here")
 			fmt.Println(err.Error())
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
