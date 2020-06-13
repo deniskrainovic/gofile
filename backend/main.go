@@ -18,14 +18,18 @@ func main() {
 		return
 	}
 	router := gin.Default()
+	// Get/Set cookie and bind to request
 	router.Use(middleware.CookieMiddleware())
+	// Bind db session to request
 	router.Use(middleware.DbMiddleware(*conn))
+	// Enable CORS for react
 	router.Use(middleware.CORSMiddleware())
 
-	router.POST("uploads/:uploadID/download", routes.DownloadAllFiles)
-	router.POST("uploads/:uploadID", routes.PostLink)
-	router.POST("upload/file", routes.UploadFile)
-	router.POST("link/generate", routes.GenerateLink)
+	router.POST("api/uploads/:uploadID/download", routes.DownloadAllFiles)
+	router.GET("api/uploads/:uploadID", routes.GetLinkFiles)
+	router.GET("api/uploads/:uploadID/checkpassword", routes.GetCheckIfPasswordNeeded)
+	router.POST("api/upload/file", routes.UploadFile)
+	router.POST("api/link/generate", routes.GenerateLink)
 
 	router.Run(":8080")
 }

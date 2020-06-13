@@ -53,3 +53,14 @@ func (l *Link) CheckPassword(conn *pgxpool.Pool) (bool, error) {
 	}
 	return isPasswordCorrect, err
 }
+
+//CheckIfPasswordNeeded looks up if a password is needed for the specified link and returns a boolean
+func (l *Link) CheckIfPasswordNeeded(conn *pgxpool.Pool) (bool, error) {
+	var dbPassword string
+	passwordNeeded := false
+	err := conn.QueryRow(context.Background(), "SELECT accesspassword FROM links WHERE cookie=$1", l.Cookie.String()).Scan(&dbPassword)
+	if dbPassword != "" {
+		passwordNeeded = true
+	}
+	return passwordNeeded, err
+}

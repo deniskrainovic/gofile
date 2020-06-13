@@ -18,7 +18,7 @@ func CookieMiddleware() gin.HandlerFunc {
 		cookie, err := c.Cookie("session")
 		if err != nil {
 			cookie = uuid.New().String()
-			c.SetCookie("session", cookie, 86400, "/", "localhost", false, true)
+			c.SetCookie("session", cookie, 86400, "/", "", false, true)
 		}
 		c.Set("cookie", cookie)
 		c.Next()

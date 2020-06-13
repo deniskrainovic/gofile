@@ -38,6 +38,12 @@ func GenerateLink(c *gin.Context) {
 	db, _ := c.Get("db")
 	conn := db.(pgxpool.Pool)
 	link.Folderpath = filepath.Join(wd, "uploads", link.Cookie.String())
+	_, err = os.Stat(link.Folderpath)
+	if err != nil {
+		fmt.Println(err.Error())
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
 	err = link.WriteToDB(&conn)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -46,13 +52,13 @@ func GenerateLink(c *gin.Context) {
 	}
 
 	cookie := uuid.New().String()
-	c.SetCookie("session", cookie, 86400, "/", "localhost", false, true)
+	c.SetCookie("session", cookie, 86400, "/", "", false, true)
 
-	url := "http://localhost:8080/uploads/" + link.Cookie.String()
+	url := "http://192.168.0.18:8080/uploads/" + link.Cookie.String()
 	c.JSON(http.StatusOK, gin.H{"link": url})
 }
 
-func PostLink(c *gin.Context) {
+func GetLinkFiles(c *gin.Context) {
 	uploadID := c.Param("uploadID")
 	link := models.Link{}
 	err := c.ShouldBind(&link)
@@ -101,6 +107,23 @@ func PostLink(c *gin.Context) {
 			return
 		}
 	}
-	c.JSON(http.StatusOK, gin.H{"isPasswordNeeded": passwordSet, "files": files})
+	c.JSON(http.StatusOK, gin.H{"files": files})
+	return
+}
+
+func GetCheckIfPasswordNeeded(c *gin.Context) {
+	uploadID, _ := uuid.Parse(c.Param("uploadID"))
+	link := models.Link{Cookie: uploadID}
+
+	db, _ := c.Get("db")
+	conn := db.(pgxpool.Pool)
+
+	isPasswordNeeded, err := link.CheckIfPasswordNeeded(&conn)
+	if err != nil {
+		fmt.Println(err.Error())
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"isPasswordNeeded": isPasswordNeeded})
 	return
 }
