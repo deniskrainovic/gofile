@@ -1,0 +1,39 @@
+Routes:
+  -------------------
+  Name: Download All Files By ID
+  URI: api/uploads/:uploadID/download
+  Method: POST
+  Body:
+    {
+      password? <string>
+    }
+  -------------------
+  Name: Get List of Files by ID
+  URI: api/uploads/:uploadID
+  Method: GET
+  Body:
+    {
+      password? <string>
+    }
+  -------------------
+  Name: Check if password is needed for link by ID
+  URI: api/uploads/:uploadID/checkpassword
+  Method: GET
+  Body: -
+  -------------------
+  Name: Upload a file
+  URI: api/upload/file
+  Method: POST
+  Body: 
+    {
+      file! <file>
+    }
+  -------------------
+  Name: Generate a link
+  URI: api/link/generate
+  Method: POST
+  Body: 
+    {
+      password? <string>
+      expirationDays <int>: 1-7
+    }
