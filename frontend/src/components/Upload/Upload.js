@@ -2,151 +2,137 @@ import React, { Component } from "react";
 import Dropzone from "../Dropzone/Dropzone";
 import "./Upload.css";
 import Progress from "../Progress/Progress";
+import MyModal from "../MyModal/MyModal";
+import { backendUrl } from "../../static/urls";
 
 class Upload extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      files: [],
-      uploading: false,
-      uploadProgress: {},
-      successfullUploaded: false
-    };
+   constructor(props) {
+      super(props);
+      this.state = {
+         files: [],
+         uploading: false,
+         uploadProgress: {},
+         successfullUploaded: false,
+      };
 
-    this.onFilesAdded = this.onFilesAdded.bind(this);
-    this.uploadFiles = this.uploadFiles.bind(this);
-    this.sendRequest = this.sendRequest.bind(this);
-    this.renderActions = this.renderActions.bind(this);
-  }
+      this.onFilesAdded = this.onFilesAdded.bind(this);
+      this.uploadFiles = this.uploadFiles.bind(this);
+      this.sendRequest = this.sendRequest.bind(this);
+   }
 
-  onFilesAdded(files) {
-    this.setState(prevState => ({
-      files: prevState.files.concat(files)
-    }));
-  }
+   onFilesAdded(files) {
+      this.setState((prevState) => ({
+         files: prevState.files.concat(files),
+      }));
+   }
 
-  async uploadFiles() {
-    this.setState({ uploadProgress: {}, uploading: true });
-    const promises = [];
-    this.state.files.forEach(file => {
-      promises.push(this.sendRequest(file));
-    });
-    try {
-      await Promise.all(promises);
-
-      this.setState({ successfullUploaded: true, uploading: false });
-    } catch (e) {
-      // Not Production ready! Do some error handling here instead...
-      this.setState({ successfullUploaded: true, uploading: false });
-    }
-  }
-
-  sendRequest(file) {
-    return new Promise((resolve, reject) => {
-      const req = new XMLHttpRequest();
-        req.withCredentials = true;
-      req.upload.addEventListener("progress", event => {
-        if (event.lengthComputable) {
-          const copy = { ...this.state.uploadProgress };
-          copy[file.name] = {
-            state: "pending",
-            percentage: (event.loaded / event.total) * 100
-          };
-          this.setState({ uploadProgress: copy });
-        }
+   async uploadFiles() {
+      this.setState({ uploadProgress: {}, uploading: true });
+      const promises = [];
+      this.state.files.forEach((file) => {
+         promises.push(this.sendRequest(file));
       });
+      try {
+         await Promise.all(promises);
 
-      req.upload.addEventListener("load", event => {
-        const copy = { ...this.state.uploadProgress };
-        copy[file.name] = { state: "done", percentage: 100 };
-        this.setState({ uploadProgress: copy });
-        resolve(req.response);
+         this.setState({ successfullUploaded: true, uploading: false });
+      } catch (e) {
+         // Not Production ready! Do some error handling here instead...
+         this.setState({ successfullUploaded: true, uploading: false });
+      }
+   }
+
+   sendRequest(file) {
+      return new Promise((resolve, reject) => {
+         const req = new XMLHttpRequest();
+         req.withCredentials = true;
+         req.upload.addEventListener("progress", (event) => {
+            if (event.lengthComputable) {
+               const copy = { ...this.state.uploadProgress };
+               copy[file.name] = {
+                  state: "pending",
+                  percentage: (event.loaded / event.total) * 100,
+               };
+               this.setState({ uploadProgress: copy });
+            }
+         });
+
+         req.upload.addEventListener("load", (event) => {
+            const copy = { ...this.state.uploadProgress };
+            copy[file.name] = { state: "done", percentage: 100 };
+            this.setState({ uploadProgress: copy });
+            resolve(req.response);
+         });
+
+         req.upload.addEventListener("error", (event) => {
+            const copy = { ...this.state.uploadProgress };
+            copy[file.name] = { state: "error", percentage: 0 };
+            this.setState({ uploadProgress: copy });
+            reject(req.response);
+         });
+
+         const formData = new FormData();
+         formData.append("file", file, file.name);
+
+         req.open("POST", backendUrl + "/api/upload/file");
+         req.send(formData);
       });
+   }
 
-      req.upload.addEventListener("error", event => {
-        const copy = { ...this.state.uploadProgress };
-        copy[file.name] = { state: "error", percentage: 0 };
-        this.setState({ uploadProgress: copy });
-        reject(req.response);
-      });
+   renderProgress(file) {
+      const uploadProgress = this.state.uploadProgress[file.name];
+      if (this.state.uploading || this.state.successfullUploaded) {
+         return (
+            <div className="ProgressWrapper">
+               <Progress
+                  progress={uploadProgress ? uploadProgress.percentage : 0}
+               />
+               <img
+                  className="CheckIcon"
+                  alt="done"
+                  src="baseline-check_circle_outline-24px.svg"
+                  style={{
+                     opacity:
+                        uploadProgress && uploadProgress.state === "done"
+                           ? 0.5
+                           : 0,
+                  }}
+               />
+            </div>
+         );
+      }
+   }
 
-      const formData = new FormData();
-      formData.append("file", file, file.name);
-
-      req.open("POST", "http://localhost:8080/upload/file");
-      req.send(formData);
-    });
-  }
-
-  renderProgress(file) {
-    const uploadProgress = this.state.uploadProgress[file.name];
-    if (this.state.uploading || this.state.successfullUploaded) {
+   render() {
       return (
-        <div className="ProgressWrapper">
-          <Progress progress={uploadProgress ? uploadProgress.percentage : 0} />
-          <img
-            className="CheckIcon"
-            alt="done"
-            src="baseline-check_circle_outline-24px.svg"
-            style={{
-              opacity:
-                uploadProgress && uploadProgress.state === "done" ? 0.5 : 0
-            }}
-          />
-        </div>
+         <div className="Upload">
+            <span className="Title">Upload Files</span>
+            <div className="Content">
+               <div>
+                  <Dropzone
+                     onFilesAdded={this.onFilesAdded}
+                     disabled={
+                        this.state.uploading || this.state.successfullUploaded
+                     }
+                  />
+               </div>
+               <div className="Files">
+                  {this.state.files.map((file) => {
+                     return (
+                        <div key={file.name} className="Row">
+                           <span className="Filename">{file.name}</span>
+                           {this.renderProgress(file)}
+                        </div>
+                     );
+                  })}
+               </div>
+            </div>
+            <div className="Actions">
+               <MyModal customHandler={this.uploadFiles} />
+            </div>
+         </div>
       );
-    }
-  }
-
-  renderActions() {
-    if (this.state.successfullUploaded) {
-      return (
-        <button
-          onClick={() =>
-            this.setState({ files: [], successfullUploaded: false })
-          }
-        >
-          Clear
-        </button>
-      );
-    } else {
-      return (
-        <button
-          disabled={this.state.files.length < 0 || this.state.uploading}
-          onClick={this.uploadFiles}
-        >
-          Generate Link
-        </button>
-      );
-    }
-  }
-
-  render() {
-    return (
-      <div className="Upload">
-        <span className="Title">Upload Files</span>
-        <div className="Content">
-          <div>
-            <Dropzone
-              onFilesAdded={this.onFilesAdded}
-              disabled={this.state.uploading || this.state.successfullUploaded}
-            />
-          </div>
-          <div className="Files">
-            {this.state.files.map(file => {
-              return (
-                <div key={file.name} className="Row">
-                  <span className="Filename">{file.name}</span>
-                  {this.renderProgress(file)}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-        <div className="Actions">{this.renderActions()}</div>
-      </div>
-    );
-  }
+   }
 }
 
 export default Upload;

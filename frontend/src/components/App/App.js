@@ -1,13 +1,8 @@
 import React from "react";
 import "./App.css";
 import Upload from "../Upload/Upload";
-import FilePage from "../FilePage/FilePage";
-import {
-   BrowserRouter as Router,
-   Switch,
-   Route,
-   Link
-} from "react-router-dom";
+import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import UploadedFiles from "../UploadedFiles/UploadedFiles.jsx";
 
 function App() {
    return (
@@ -21,23 +16,18 @@ function App() {
                <div className="header-image" />
             </header>
             <Switch>
-               <Route path="/uploads/:uploadID" component={FilePage} />
-               <Route path="/">
-
+               <Route exact path="/">
                   <div className="MainBody">
                      <div className="Card">
                         <Upload />
                      </div>
                   </div>
-
                </Route>
+               <Route path="/uploads/:id" component={UploadedFiles}></Route>
             </Switch>
          </div>
       </Router>
-
    );
 }
-
-
 
 export default App;
