@@ -85,10 +85,6 @@ func GetLinkFiles(c *gin.Context) {
 			return
 		}
 	} else {
-		if link.Accesspassword == "" {
-			c.AbortWithStatus(http.StatusUnauthorized)
-			return
-		}
 		isPasswordCorrect, err := link.CheckPassword(&conn)
 		if err != nil {
 			fmt.Println(err.Error())

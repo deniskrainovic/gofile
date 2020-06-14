@@ -93,25 +93,24 @@ func DownloadAllFiles(c *gin.Context) {
 		c.Writer.Header().Set("Content-Disposition", "attachment; filename=gofile_download.zip")
 		models.DownloadAllFilesByCookie(&conn, link.Cookie.String(), &c.Writer)
 		return
-	} else {
-		if link.Accesspassword == "" {
-			c.AbortWithStatus(http.StatusUnauthorized)
-			return
-		}
-		isPasswordCorrect, err := link.CheckPassword(&conn)
-		if err != nil {
-			fmt.Println(err.Error())
-			c.AbortWithStatus(http.StatusInternalServerError)
-			return
-		}
-		if isPasswordCorrect == true {
-			c.Writer.Header().Set("Content-type", "application/octet-stream")
-			c.Writer.Header().Set("Content-Disposition", "attachment; filename=gofile_download.zip")
-			models.DownloadAllFilesByCookie(&conn, link.Cookie.String(), &c.Writer)
-			return
-		} else {
-			c.AbortWithStatus(http.StatusUnauthorized)
-			return
-		}
 	}
+	if link.Accesspassword == "" {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	isPasswordCorrect, err := link.CheckPassword(&conn)
+	if err != nil {
+		fmt.Println(err.Error())
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	if isPasswordCorrect == true {
+		c.Writer.Header().Set("Content-type", "application/octet-stream")
+		c.Writer.Header().Set("Content-Disposition", "attachment; filename=gofile_download.zip")
+		models.DownloadAllFilesByCookie(&conn, link.Cookie.String(), &c.Writer)
+		return
+	}
+	c.AbortWithStatus(http.StatusUnauthorized)
+	return
+
 }
